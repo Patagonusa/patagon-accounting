@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: patagon-accounting
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: QUICKBOOKS_CLIENT_ID
+        sync: false
+      - key: QUICKBOOKS_CLIENT_SECRET
+        sync: false
+      - key: QUICKBOOKS_REDIRECT_URI
+        sync: false
+      - key: QUICKBOOKS_ENVIRONMENT
+        value: sandbox
+      - key: SECRET_KEY
+        sync: false
