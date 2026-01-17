@@ -49,6 +49,13 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 app.include_router(api_router, prefix="/api/v1")
 
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Render."""
+    return {"status": "healthy", "service": "patagon-accounting"}
+
+
 def get_quickbooks() -> QuickBooksConnector:
     """Get the QuickBooks connector instance."""
     return qb_connector
