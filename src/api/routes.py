@@ -194,11 +194,11 @@ async def create_account(account_data: dict):
 # ==================== Vendors/Contractors ====================
 
 @router.get("/vendors")
-async def get_vendors():
+async def get_vendors(max_results: int = 500):
     """Get all vendors/contractors."""
     qb = get_qb_connector()
     try:
-        vendors = await qb.get_vendors()
+        vendors = await qb.get_vendors(max_results=max_results)
         return {"vendors": vendors, "count": len(vendors)}
     except Exception as e:
         logger.error(f"Failed to get vendors: {str(e)}")
