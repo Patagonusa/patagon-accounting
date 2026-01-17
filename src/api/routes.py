@@ -337,3 +337,86 @@ async def bulk_create_bills(bills: List[dict] = Body(...)):
         "created": results["created"],
         "errors": results["errors"]
     }
+
+
+# ==================== Bill Payments ====================
+
+@router.get("/billpayments")
+async def get_bill_payments():
+    """Get all bill payments."""
+    qb = get_qb_connector()
+    try:
+        payments = await qb.get_bill_payments()
+        return {"bill_payments": payments, "count": len(payments)}
+    except Exception as e:
+        logger.error(f"Failed to get bill payments: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/billpayments")
+async def create_bill_payment(payment_data: dict):
+    """Create a bill payment to mark a bill as paid.
+
+    Example payload:
+    {
+        "VendorRef": {"value": "56"},
+        "PayType": "Check",
+        "TotalAmt": 500.00,
+        "CheckPayment": {
+            "BankAccountRef": {"value": "35"}
+        },
+        "Line": [
+            {
+                "Amount": 500.00,
+                "LinkedTxn": [
+                    {"TxnId": "123", "TxnType": "Bill"}
+                ]
+            }
+        ]
+    }
+    """
+    qb = get_qb_connector()
+    try:
+        payment = await qb.create_bill_payment(payment_data)
+        return payment
+    except Exception as e:
+        logger.error(f"Failed to create bill payment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/billpayments/bulk")
+async def bulk_pay_bills(payments: List[dict] = Body(...)):
+    """Bulk create bill payments to mark multiple bills as paid.
+
+    Example payload:
+    [
+        {
+            "VendorRef": {"value": "56"},
+            "PayType": "Check",
+            "TotalAmt": 500.00,
+            "CheckPayment": {"BankAccountRef": {"value": "35"}},
+            "Line": [{"Amount": 500.00, "LinkedTxn": [{"TxnId": "123", "TxnType": "Bill"}]}]
+        }
+    ]
+    """
+    qb = get_qb_connector()
+    results = {"paid": [], "errors": []}
+
+    for payment_data in payments:
+        try:
+            payment = await qb.create_bill_payment(payment_data)
+            results["paid"].append(payment)
+        except Exception as e:
+            vendor_ref = payment_data.get("VendorRef", {}).get("value", "Unknown")
+            results["errors"].append({
+                "vendor": vendor_ref,
+                "error": str(e)
+            })
+
+    return {
+        "total": len(payments),
+        "paid_count": len(results["paid"]),
+        "error_count": len(results["errors"]),
+        "paid": results["paid"],
+        "errors": results["errors"]
+    }

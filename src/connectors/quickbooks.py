@@ -375,6 +375,19 @@ class QuickBooksConnector:
         response = await self.api_request("POST", endpoint, data=bill_data)
         return response.get("Bill", {})
 
+    async def create_bill_payment(self, payment_data: dict) -> dict:
+        """Create a bill payment to mark bills as paid."""
+        endpoint = f"/v3/company/{self.realm_id}/billpayment"
+        response = await self.api_request("POST", endpoint, data=payment_data)
+        return response.get("BillPayment", {})
+
+    async def get_bill_payments(self, max_results: int = 100) -> list:
+        """Get all bill payments."""
+        endpoint = f"/v3/company/{self.realm_id}/query"
+        params = {"query": f"SELECT * FROM BillPayment MAXRESULTS {max_results}"}
+        response = await self.api_request("GET", endpoint, params=params)
+        return response.get("QueryResponse", {}).get("BillPayment", [])
+
     # ==================== Token Storage ====================
 
     def _save_tokens(self):
