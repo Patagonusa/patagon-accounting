@@ -272,3 +272,68 @@ async def get_bills():
     except Exception as e:
         logger.error(f"Failed to get bills: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/bills")
+async def create_bill(bill_data: dict):
+    """Create a new bill (expense from vendor).
+
+    Example payload:
+    {
+        "VendorRef": {"value": "56"},
+        "Line": [
+            {
+                "Amount": 500.00,
+                "DetailType": "AccountBasedExpenseLineDetail",
+                "AccountBasedExpenseLineDetail": {
+                    "AccountRef": {"value": "7"}
+                },
+                "Description": "Contractor payment Week 01-02"
+            }
+        ],
+        "TxnDate": "2026-01-17"
+    }
+    """
+    qb = get_qb_connector()
+    try:
+        bill = await qb.create_bill(bill_data)
+        return bill
+    except Exception as e:
+        logger.error(f"Failed to create bill: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/bills/bulk")
+async def bulk_create_bills(bills: List[dict] = Body(...)):
+    """Bulk create bills for contractor payments.
+
+    Example payload:
+    [
+        {
+            "VendorRef": {"value": "56"},
+            "Line": [{"Amount": 500.00, "DetailType": "AccountBasedExpenseLineDetail", "AccountBasedExpenseLineDetail": {"AccountRef": {"value": "7"}}}],
+            "TxnDate": "2026-01-17"
+        }
+    ]
+    """
+    qb = get_qb_connector()
+    results = {"created": [], "errors": []}
+
+    for bill_data in bills:
+        try:
+            bill = await qb.create_bill(bill_data)
+            results["created"].append(bill)
+        except Exception as e:
+            vendor_ref = bill_data.get("VendorRef", {}).get("value", "Unknown")
+            results["errors"].append({
+                "vendor": vendor_ref,
+                "error": str(e)
+            })
+
+    return {
+        "total": len(bills),
+        "created_count": len(results["created"]),
+        "error_count": len(results["errors"]),
+        "created": results["created"],
+        "errors": results["errors"]
+    }
