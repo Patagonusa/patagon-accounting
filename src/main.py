@@ -7,12 +7,10 @@ FastAPI application for QuickBooks Online accounting integration.
 import secrets
 from contextlib import asynccontextmanager
 
-import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import structlog
 
@@ -43,11 +41,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-
-# Mount static files (only if directory exists and has files)
-static_dir = Path(__file__).parent / "static"
-if static_dir.exists() and any(static_dir.iterdir()):
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # Templates
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
