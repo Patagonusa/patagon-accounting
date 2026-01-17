@@ -7,6 +7,7 @@ FastAPI application for QuickBooks Online accounting integration.
 import secrets
 from contextlib import asynccontextmanager
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request, HTTPException
@@ -28,9 +29,16 @@ qb_connector: QuickBooksConnector = None
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     global qb_connector
-    settings = get_settings()
-    qb_connector = QuickBooksConnector(settings)
-    logger.info("Patagon Accounting started", environment=settings.quickbooks_environment)
+    try:
+        settings = get_settings()
+        logger.info("Settings loaded",
+            client_id_set=bool(settings.quickbooks_client_id),
+            environment=settings.quickbooks_environment)
+        qb_connector = QuickBooksConnector(settings)
+        logger.info("Patagon Accounting started", environment=settings.quickbooks_environment)
+    except Exception as e:
+        logger.error("Failed to initialize", error=str(e))
+        # Still yield to allow the app to start for debugging
     yield
     logger.info("Patagon Accounting shutting down")
 
@@ -42,8 +50,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Templates
-templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+# Templates - use absolute path that works on all platforms
+TEMPLATES_DIR = Path(__file__).parent / "templates"
+if not TEMPLATES_DIR.exists():
+    # Fallback for different working directories
+    TEMPLATES_DIR = Path("src/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR.resolve()))
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
