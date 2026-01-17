@@ -62,6 +62,25 @@ async def health_check():
     return {"status": "healthy", "service": "patagon-accounting"}
 
 
+# Legal pages
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy(request: Request):
+    """Privacy Policy page."""
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+
+@app.get("/eula", response_class=HTMLResponse)
+async def eula(request: Request):
+    """End-User License Agreement page."""
+    return templates.TemplateResponse("eula.html", {"request": request})
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms(request: Request):
+    """Terms of Service (redirects to EULA)."""
+    return templates.TemplateResponse("eula.html", {"request": request})
+
+
 def get_quickbooks() -> QuickBooksConnector:
     """Get the QuickBooks connector instance."""
     return qb_connector
