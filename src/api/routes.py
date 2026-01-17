@@ -4,10 +4,10 @@ API Routes for Patagon Accounting
 REST API endpoints for QuickBooks data.
 """
 
+import logging
 from fastapi import APIRouter, HTTPException
-import structlog
 
-logger = structlog.get_logger()
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

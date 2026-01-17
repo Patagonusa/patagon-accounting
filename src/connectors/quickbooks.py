@@ -6,16 +6,16 @@ Handles OAuth 2.0 authentication and API calls to QuickBooks Online.
 
 import json
 import base64
+import logging
 from datetime import datetime, timedelta
 from typing import Any, Optional
 from pathlib import Path
 
 import httpx
-import structlog
 
 from src.config import Settings
 
-logger = structlog.get_logger()
+logger = logging.getLogger(__name__)
 
 # Token storage file (in production, use database)
 TOKEN_FILE = Path(__file__).parent.parent.parent / "quickbooks_tokens.json"
