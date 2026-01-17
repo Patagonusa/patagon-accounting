@@ -5,7 +5,8 @@ REST API endpoints for QuickBooks data.
 """
 
 import logging
-from fastapi import APIRouter, HTTPException
+from typing import List
+from fastapi import APIRouter, HTTPException, Body
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +229,7 @@ async def create_vendor(vendor_data: dict):
 
 
 @router.post("/vendors/bulk")
-async def bulk_create_vendors(vendors: list):
+async def bulk_create_vendors(vendors: List[dict] = Body(...)):
     """Bulk create vendors/contractors.
 
     Example payload:
