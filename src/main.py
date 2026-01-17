@@ -81,6 +81,12 @@ async def terms(request: Request):
     return templates.TemplateResponse("eula.html", {"request": request})
 
 
+@app.get("/contractors", response_class=HTMLResponse)
+async def contractors_page(request: Request):
+    """Contractors management page."""
+    return templates.TemplateResponse("contractors.html", {"request": request})
+
+
 def get_quickbooks() -> QuickBooksConnector:
     """Get the QuickBooks connector instance."""
     return qb_connector
