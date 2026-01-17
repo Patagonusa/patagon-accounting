@@ -122,9 +122,7 @@ class QuickBooksConnector:
 
             if response.status_code != 200:
                 logger.error(
-                    "Failed to exchange code for tokens",
-                    status_code=response.status_code,
-                    response=response.text,
+                    f"Failed to exchange code for tokens: status_code={response.status_code}, response={response.text}"
                 )
                 raise QuickBooksError(f"Token exchange failed: {response.text}")
 
@@ -140,11 +138,7 @@ class QuickBooksConnector:
         # Persist tokens
         self._save_tokens()
 
-        logger.info(
-            "Successfully obtained QuickBooks tokens",
-            realm_id=realm_id,
-            expires_in=expires_in,
-        )
+        logger.info(f"Successfully obtained QuickBooks tokens: realm_id={realm_id}, expires_in={expires_in}")
 
         return token_data
 
@@ -181,9 +175,7 @@ class QuickBooksConnector:
 
             if response.status_code != 200:
                 logger.error(
-                    "Failed to refresh token",
-                    status_code=response.status_code,
-                    response=response.text,
+                    f"Failed to refresh token: status_code={response.status_code}, response={response.text}"
                 )
                 raise QuickBooksError(f"Token refresh failed: {response.text}")
 
@@ -262,9 +254,7 @@ class QuickBooksConnector:
 
             if response.status_code >= 400:
                 logger.error(
-                    "QuickBooks API error",
-                    status_code=response.status_code,
-                    response=response.text,
+                    f"QuickBooks API error: status_code={response.status_code}, response={response.text}"
                 )
                 raise QuickBooksError(f"API error: {response.status_code} - {response.text}")
 
@@ -376,7 +366,7 @@ class QuickBooksConnector:
                 json.dump(token_data, f)
             logger.info("Tokens saved successfully")
         except Exception as e:
-            logger.error("Failed to save tokens", error=str(e))
+            logger.error(f"Failed to save tokens: {str(e)}")
 
     def _load_tokens(self):
         """Load tokens from file."""
@@ -390,9 +380,9 @@ class QuickBooksConnector:
                 expiry_str = token_data.get("token_expiry")
                 if expiry_str:
                     self.token_expiry = datetime.fromisoformat(expiry_str)
-                logger.info("Tokens loaded successfully", realm_id=self.realm_id)
+                logger.info(f"Tokens loaded successfully: realm_id={self.realm_id}")
         except Exception as e:
-            logger.warning("Failed to load tokens", error=str(e))
+            logger.warning(f"Failed to load tokens: {str(e)}")
 
     def disconnect(self):
         """Clear stored tokens."""
