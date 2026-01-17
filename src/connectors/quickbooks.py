@@ -342,6 +342,24 @@ class QuickBooksConnector:
         response = await self.api_request("GET", endpoint, params=params)
         return response.get("QueryResponse", {}).get("Vendor", [])
 
+    async def create_vendor(self, vendor_data: dict) -> dict:
+        """Create a new vendor/contractor."""
+        endpoint = f"/v3/company/{self.realm_id}/vendor"
+        response = await self.api_request("POST", endpoint, data=vendor_data)
+        return response.get("Vendor", {})
+
+    async def update_vendor(self, vendor_data: dict) -> dict:
+        """Update an existing vendor/contractor."""
+        endpoint = f"/v3/company/{self.realm_id}/vendor"
+        response = await self.api_request("POST", endpoint, data=vendor_data)
+        return response.get("Vendor", {})
+
+    async def get_vendor(self, vendor_id: str) -> dict:
+        """Get a specific vendor by ID."""
+        endpoint = f"/v3/company/{self.realm_id}/vendor/{vendor_id}"
+        response = await self.api_request("GET", endpoint)
+        return response.get("Vendor", {})
+
     # ==================== Bills ====================
 
     async def get_bills(self, max_results: int = 100) -> list:
