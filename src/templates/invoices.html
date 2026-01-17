@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices - Patagon Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --qb-green: #2CA01C; }
+        body { background-color: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #2CA01C 0%, #1E7A14 100%); }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .table th { background: #f8f9fa; font-weight: 600; }
+        .badge-paid { background: rgba(44, 160, 28, 0.15); color: #2CA01C; }
+        .badge-unpaid { background: rgba(255, 193, 7, 0.25); color: #856404; }
+        .badge-overdue { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="bi bi-calculator"></i> Patagon Accounting</a>
+            <span class="text-white"><i class="bi bi-receipt me-1"></i> Invoices</span>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/customers"><i class="bi bi-people"></i> Customers</a></li>
+            <li class="nav-item"><a class="nav-link active" href="/invoices"><i class="bi bi-receipt"></i> Invoices</a></li>
+            <li class="nav-item"><a class="nav-link" href="/payments"><i class="bi bi-credit-card"></i> Payments</a></li>
+            <li class="nav-item"><a class="nav-link" href="/accounts"><i class="bi bi-journal-text"></i> Accounts</a></li>
+        </ul>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-receipt text-success me-2"></i>Invoices</h2>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Total</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoices-table">
+                            <tr><td colspan="7" class="text-center py-4">
+                                <div class="spinner-border text-success" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading invoices...</p>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadInvoices() {
+            try {
+                const response = await fetch('/api/v1/invoices');
+                const data = await response.json();
+                const tbody = document.getElementById('invoices-table');
+
+                if (!data.invoices || data.invoices.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No invoices found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.invoices.map(inv => {
+                    const balance = inv.Balance || 0;
+                    const total = inv.TotalAmt || 0;
+                    let statusClass = 'badge-unpaid';
+                    let statusText = 'Unpaid';
+
+                    if (balance === 0) {
+                        statusClass = 'badge-paid';
+                        statusText = 'Paid';
+                    } else if (inv.DueDate && new Date(inv.DueDate) < new Date()) {
+                        statusClass = 'badge-overdue';
+                        statusText = 'Overdue';
+                    }
+
+                    return `
+                        <tr>
+                            <td><strong>${inv.DocNumber || inv.Id}</strong></td>
+                            <td>${inv.CustomerRef?.name || '-'}</td>
+                            <td>${inv.TxnDate || '-'}</td>
+                            <td>${inv.DueDate || '-'}</td>
+                            <td>$${total.toFixed(2)}</td>
+                            <td>$${balance.toFixed(2)}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                document.getElementById('invoices-table').innerHTML =
+                    '<tr><td colspan="7" class="text-center text-danger py-4">Failed to load invoices</td></tr>';
+            }
+        }
+        loadInvoices();
+    </script>
+</body>
+</html>

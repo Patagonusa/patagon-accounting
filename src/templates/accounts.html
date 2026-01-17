@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart of Accounts - Patagon Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --qb-green: #2CA01C; }
+        body { background-color: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #2CA01C 0%, #1E7A14 100%); }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .table th { background: #f8f9fa; font-weight: 600; }
+        .account-type { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; }
+        .type-asset { background: rgba(13, 110, 253, 0.15); color: #0d6efd; }
+        .type-liability { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
+        .type-equity { background: rgba(111, 66, 193, 0.15); color: #6f42c1; }
+        .type-income { background: rgba(44, 160, 28, 0.15); color: #2CA01C; }
+        .type-expense { background: rgba(255, 193, 7, 0.25); color: #856404; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="bi bi-calculator"></i> Patagon Accounting</a>
+            <span class="text-white"><i class="bi bi-journal-text me-1"></i> Chart of Accounts</span>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/customers"><i class="bi bi-people"></i> Customers</a></li>
+            <li class="nav-item"><a class="nav-link" href="/invoices"><i class="bi bi-receipt"></i> Invoices</a></li>
+            <li class="nav-item"><a class="nav-link" href="/payments"><i class="bi bi-credit-card"></i> Payments</a></li>
+            <li class="nav-item"><a class="nav-link active" href="/accounts"><i class="bi bi-journal-text"></i> Accounts</a></li>
+        </ul>
+
+        <h2 class="mb-4"><i class="bi bi-journal-text text-success me-2"></i>Chart of Accounts</h2>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Account Name</th>
+                                <th>Type</th>
+                                <th>Sub-Type</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accounts-table">
+                            <tr><td colspan="5" class="text-center py-4">
+                                <div class="spinner-border text-success" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading accounts...</p>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getTypeClass(type) {
+            const typeMap = {
+                'Asset': 'type-asset',
+                'Bank': 'type-asset',
+                'Liability': 'type-liability',
+                'Equity': 'type-equity',
+                'Income': 'type-income',
+                'Revenue': 'type-income',
+                'Expense': 'type-expense',
+                'Cost of Goods Sold': 'type-expense',
+            };
+            return typeMap[type] || 'bg-secondary text-white';
+        }
+
+        async function loadAccounts() {
+            try {
+                const response = await fetch('/api/v1/accounts');
+                const data = await response.json();
+                const tbody = document.getElementById('accounts-table');
+
+                if (!data.accounts || data.accounts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No accounts found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.accounts.map(acc => `
+                    <tr>
+                        <td><strong>${acc.Name || 'N/A'}</strong></td>
+                        <td><span class="account-type ${getTypeClass(acc.AccountType)}">${acc.AccountType || '-'}</span></td>
+                        <td>${acc.AccountSubType || '-'}</td>
+                        <td>$${(acc.CurrentBalance || 0).toFixed(2)}</td>
+                        <td>${acc.Active ? '<span class="text-success">Active</span>' : '<span class="text-muted">Inactive</span>'}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('accounts-table').innerHTML =
+                    '<tr><td colspan="5" class="text-center text-danger py-4">Failed to load accounts</td></tr>';
+            }
+        }
+        loadAccounts();
+    </script>
+</body>
+</html>

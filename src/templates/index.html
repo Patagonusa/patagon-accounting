@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patagon Accounting - QuickBooks Integration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #2CA01C 0%, #1E7A14 100%);
+            --qb-green: #2CA01C;
+        }
+        body { background-color: #f8f9fa; }
+        .navbar { background: var(--primary-gradient); }
+        .hero-section {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card-icon {
+            font-size: 3rem;
+            color: var(--qb-green);
+            margin-bottom: 16px;
+        }
+        .btn-qb {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 12px 32px;
+            font-size: 1.1rem;
+        }
+        .btn-qb:hover {
+            background: linear-gradient(135deg, #1E7A14 0%, #166010 100%);
+            color: white;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .status-connected {
+            background: rgba(44, 160, 28, 0.15);
+            color: #2CA01C;
+        }
+        .status-disconnected {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        .nav-card {
+            text-decoration: none;
+            color: inherit;
+        }
+        .nav-card:hover { color: inherit; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-calculator"></i> Patagon Accounting
+            </span>
+            {% if is_connected %}
+            <span class="text-white-50">
+                <i class="bi bi-building me-1"></i> {{ company_name }}
+            </span>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if not is_connected %}
+    <!-- Not Connected State -->
+    <div class="hero-section text-center">
+        <div class="container">
+            <i class="bi bi-cloud-slash" style="font-size: 4rem;"></i>
+            <h1 class="mt-3">Connect to QuickBooks</h1>
+            <p class="lead mb-4">Link your QuickBooks Online account to manage your accounting data.</p>
+            <a href="/connect" class="btn btn-light btn-lg">
+                <i class="bi bi-link-45deg me-2"></i> Connect QuickBooks
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card p-4">
+                    <h5><i class="bi bi-info-circle text-primary me-2"></i> About This Integration</h5>
+                    <p class="text-muted mb-0">
+                        This application connects to your QuickBooks Online account to help you manage:
+                    </p>
+                    <ul class="text-muted mt-2">
+                        <li>Customers and contacts</li>
+                        <li>Invoices and billing</li>
+                        <li>Payments and receipts</li>
+                        <li>Chart of accounts</li>
+                        <li>Vendors and bills</li>
+                    </ul>
+                    <p class="text-muted mb-0">
+                        Click "Connect QuickBooks" above to authorize access to your account.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Connected State -->
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Dashboard</h2>
+                <span class="status-badge status-connected">
+                    <i class="bi bi-check-circle-fill"></i> Connected to QuickBooks
+                </span>
+            </div>
+            <a href="/disconnect" class="btn btn-outline-danger">
+                <i class="bi bi-plug"></i> Disconnect
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Customers Card -->
+            <div class="col-md-4">
+                <a href="/customers" class="nav-card">
+                    <div class="card text-center p-4">
+                        <div class="card-icon"><i class="bi bi-people"></i></div>
+                        <h5>Customers</h5>
+                        <p class="text-muted mb-0">Manage your customer list</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Invoices Card -->
+            <div class="col-md-4">
+                <a href="/invoices" class="nav-card">
+                    <div class="card text-center p-4">
+                        <div class="card-icon"><i class="bi bi-receipt"></i></div>
+                        <h5>Invoices</h5>
+                        <p class="text-muted mb-0">View and create invoices</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Payments Card -->
+            <div class="col-md-4">
+                <a href="/payments" class="nav-card">
+                    <div class="card text-center p-4">
+                        <div class="card-icon"><i class="bi bi-credit-card"></i></div>
+                        <h5>Payments</h5>
+                        <p class="text-muted mb-0">Track payments received</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Chart of Accounts Card -->
+            <div class="col-md-4">
+                <a href="/accounts" class="nav-card">
+                    <div class="card text-center p-4">
+                        <div class="card-icon"><i class="bi bi-journal-text"></i></div>
+                        <h5>Chart of Accounts</h5>
+                        <p class="text-muted mb-0">View account structure</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Company Info Card -->
+            <div class="col-md-4">
+                <div class="card text-center p-4">
+                    <div class="card-icon"><i class="bi bi-building"></i></div>
+                    <h5>Company Info</h5>
+                    <p class="text-muted mb-2">{{ company_name }}</p>
+                    <small class="text-muted">Realm ID: {{ realm_id }}</small>
+                </div>
+            </div>
+
+            <!-- API Status Card -->
+            <div class="col-md-4">
+                <div class="card text-center p-4">
+                    <div class="card-icon"><i class="bi bi-cloud-check"></i></div>
+                    <h5>API Status</h5>
+                    <p class="text-muted mb-0" id="api-status">Checking...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row g-4 mt-4">
+            <div class="col-12">
+                <div class="card p-4">
+                    <h5><i class="bi bi-graph-up me-2"></i> Quick Stats</h5>
+                    <div class="row text-center mt-3" id="quick-stats">
+                        <div class="col">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <p class="text-muted mb-0">Loading stats...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load quick stats
+        async function loadStats() {
+            try {
+                const [customers, invoices, payments] = await Promise.all([
+                    fetch('/api/v1/customers').then(r => r.json()),
+                    fetch('/api/v1/invoices').then(r => r.json()),
+                    fetch('/api/v1/payments').then(r => r.json()),
+                ]);
+
+                document.getElementById('quick-stats').innerHTML = `
+                    <div class="col-md-4">
+                        <h3 class="text-primary">${customers.count || 0}</h3>
+                        <p class="text-muted mb-0">Customers</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-success">${invoices.count || 0}</h3>
+                        <p class="text-muted mb-0">Invoices</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-info">${payments.count || 0}</h3>
+                        <p class="text-muted mb-0">Payments</p>
+                    </div>
+                `;
+
+                document.getElementById('api-status').innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Connected</span>';
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                document.getElementById('quick-stats').innerHTML = '<div class="col"><p class="text-danger">Failed to load stats</p></div>';
+                document.getElementById('api-status').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle me-1"></i>Error</span>';
+            }
+        }
+
+        loadStats();
+    </script>
+    {% endif %}
+
+    <footer class="text-center text-muted py-4 mt-5">
+        <small>Developed by <strong>Felipe Jansen</strong> &copy; 2025 | Patagon Consulting</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
