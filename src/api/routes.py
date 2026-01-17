@@ -171,6 +171,26 @@ async def get_accounts():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/accounts")
+async def create_account(account_data: dict):
+    """Create a new account in the chart of accounts.
+
+    Example payload for Fixed Asset:
+    {
+        "Name": "Vehicles",
+        "AccountType": "Fixed Asset",
+        "AccountSubType": "Vehicles"
+    }
+    """
+    qb = get_qb_connector()
+    try:
+        account = await qb.create_account(account_data)
+        return account
+    except Exception as e:
+        logger.error(f"Failed to create account: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Vendors/Contractors ====================
 
 @router.get("/vendors")

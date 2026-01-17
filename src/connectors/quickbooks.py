@@ -333,6 +333,12 @@ class QuickBooksConnector:
         response = await self.api_request("GET", endpoint, params=params)
         return response.get("QueryResponse", {}).get("Account", [])
 
+    async def create_account(self, account_data: dict) -> dict:
+        """Create a new account in the chart of accounts."""
+        endpoint = f"/v3/company/{self.realm_id}/account"
+        response = await self.api_request("POST", endpoint, data=account_data)
+        return response.get("Account", {})
+
     # ==================== Vendors ====================
 
     async def get_vendors(self, max_results: int = 100) -> list:
